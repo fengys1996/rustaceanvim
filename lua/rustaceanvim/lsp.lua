@@ -1,57 +1,4 @@
-local M = {}
----@type RustaceanConfig
-local config = require('rustaceanvim.config.internal')
-local compat = require('rustaceanvim.compat')
-local types = require('rustaceanvim.types.internal')
-local rust_analyzer = require('rustaceanvim.rust_analyzer')
-local server_status = require('rustaceanvim.server_status')
-local cargo = require('rustaceanvim.cargo')
-local os = require('rustaceanvim.os')
-
-local function override_apply_text_edits()
-  local old_func = vim.lsp.util.apply_text_edits
-  ---@diagnostic disable-next-line
-  vim.lsp.util.apply_text_edits = function(edits, bufnr, offset_encoding)
-    local overrides = require('rustaceanvim.overrides')
-    overrides.snippet_text_edits_to_text_edits(edits)
-    old_func(edits, bufnr, offset_encoding)
-  end
-end
-
----@param client lsp.Client
----@param root_dir string
----@return boolean
-local function is_in_workspace(client, root_dir)
-  if not client.workspace_folders then
-    return false
-  end
-
-  for _, dir in ipairs(client.workspace_folders) do
-    if (root_dir .. '/'):sub(1, #dir.name + 1) == dir.name .. '/' then
-      return true
-    end
-  end
-
-  return false
-end
-
----@class LspStartConfig: RustaceanLspClientConfig
----@field root_dir string | nil
----@field init_options? table
----@field settings table
----@field cmd string[]
----@field name string
----@field filetypes string[]
----@field capabilities table
----@field handlers lsp.Handler[]
----@field on_init function
----@field on_attach function
----@field on_exit function
-
---- Start or attach the LSP client
----@param bufnr? number The buffer number (optional), defaults to the current buffer
----@return integer|nil client_id The LSP client ID
-M.start = function(bufnr)
+bufnr)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
   local client_config = config.server
   ---@type LspStartConfig
@@ -84,6 +31,7 @@ M.start = function(bufnr)
         client.workspace_folders = {}
       end
       table.insert(client.workspace_folders, workspace_folder)
+      print("Added workspace folder to rust-analyzer's running client.", bufnr)
       vim.lsp.buf_attach_client(bufnr, client.id)
       return
     end
