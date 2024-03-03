@@ -86,6 +86,9 @@ M.start = function(bufnr)
       table.insert(client.workspace_folders, workspace_folder)
       vim.lsp.buf_attach_client(bufnr, client.id)
       return
+    else
+      vim.lsp.buf_attach_client(bufnr, client.id)
+      return
     end
   end
 
@@ -144,7 +147,7 @@ M.start = function(bufnr)
 
   lsp_start_config.handlers = vim.tbl_deep_extend('force', custom_handlers, lsp_start_config.handlers or {})
 
-  local augroup = vim.api.nvim_create_augroup('RustaceanAutoCmds', { clear = true })
+  local augroup = vim.api.nvim_create_augroup('RustaceanAutoCmds', { clear = false })
 
   local commands = require('rustaceanvim.commands')
   local old_on_init = lsp_start_config.on_init
