@@ -12,6 +12,18 @@ describe('LSP client API', function()
   local lsp = require('rustaceanvim.lsp')
   local RustaceanConfig = require('rustaceanvim.config.internal')
   local Types = require('rustaceanvim.types.internal')
+
+  it("doesn't start LSP for fugitive buffers", function()
+    local lsp_start = stub(vim.lsp, 'start')
+    local bufnr = vim.api.nvim_create_buf(true, false)
+    vim.api.nvim_buf_set_name(bufnr, 'fugitive:///tmp/project/.git//0/src/main.rs')
+    vim.bo[bufnr].filetype = 'rust'
+    vim.api.nvim_set_current_buf(bufnr)
+    vim.cmd.RustAnalyzer('start')
+    assert.stub(lsp_start).called(0)
+    lsp_start:revert()
+  end)
+
   local ra_bin = Types.evaluate(RustaceanConfig.server.cmd)[1]
   if vim.fn.executable(ra_bin) == 1 then
     it('can spin up rust-analyzer.', function()

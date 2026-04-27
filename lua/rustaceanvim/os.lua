@@ -52,6 +52,10 @@ end
 ---@param path string
 ---@return boolean
 function os.is_valid_file_path(path)
+  -- Reject URI-like buffer names (e.g. fugitive://, term://, oil://).
+  if path:match('^%a[%w+.-]*://') ~= nil then
+    return false
+  end
   local normalized_path = vim.fs.normalize(path, { expand_env = false })
   if shell.is_windows() then
     return starts_with_windows_drive_letter(normalized_path)
